@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="theme-color" content="#0ea5e9" />
+		<title>調整さん 日程候補ジェネレーター</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<div class="logo" aria-hidden="true"></div>
+				<div>
+					<h1>調整さん 日程候補ジェネレーター</h1>
+					<p class="desc">ワンタップで候補入りの調整さん作成画面を開けます。必要なら下で細かく設定してから使えます。</p>
+				</div>
+			</header>
+
+			<div class="card quick-card">
+				<p class="eyebrow">クイック</p>
+				<h2 class="section-title">すぐ作る</h2>
+				<p class="section-copy">今日から2ヶ月先</p>
+				<div class="btns hero-actions quick-actions" style="margin-top: 16px;">
+					<button id="quickLaunchAllDayBtn">金曜19時~/土日終日</button>
+					<button id="quickLaunchSplitBtn">金曜19時~/土日9~13時/土日13時~17時</button>
+				</div>
+				<a class="btn secondary quick-detail-link" href="#advancedSettings">詳細設定</a>
+			</div>
+
+			<div id="advancedSettings" class="card" style="margin-bottom: 14px;">
+				<div class="section-head">
+					<div>
+						<p class="eyebrow">詳細設定</p>
+						<h2 class="section-title">タイトルや期間を調整して開く</h2>
+						<p class="section-copy">今までの細かい設定はそのまま使えます。ここから開く場合も、候補入りの調整さん作成画面へ進みます。</p>
+					</div>
+				</div>
+				<div class="grid cols-2">
+					<div>
+						<label for="title">イベント名（任意・メモ用）</label>
+						<input id="title" type="text" inputmode="text" placeholder="例: 飲み会の候補日" />
+					</div>
+					<div>
+						<label for="startDate">開始日</label>
+						<input id="startDate" type="date" />
+					</div>
+					<div>
+						<label for="months">対象期間</label>
+						<select id="months">
+							<option value="2" selected>2ヶ月</option>
+							<option value="1">1ヶ月</option>
+							<option value="3">3ヶ月</option>
+						</select>
+					</div>
+					<div>
+						<label for="friTime">金曜夜の開始時刻</label>
+						<input id="friTime" type="time" value="19:00" />
+					</div>
+				</div>
+
+				<div class="spacer"></div>
+
+				<div class="inline">
+					<div class="chip">
+						<input id="incFri" type="checkbox" checked />
+						<label for="incFri">金曜夜</label>
+					</div>
+					<div class="chip">
+						<input id="incSat" type="checkbox" checked />
+						<label for="incSat">土曜（終日）</label>
+					</div>
+					<div class="chip">
+						<input id="incSun" type="checkbox" checked />
+						<label for="incSun">日曜（終日）</label>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<div class="btns">
+					<button id="generateBtn">候補を生成</button>
+					<button id="copyBtn" class="secondary" disabled>候補をコピー</button>
+					<button id="copyOpenBtn" class="success" disabled>候補入りで調整さんを開く</button>
+					<a class="btn secondary" href="https://chouseisan.com/" target="_blank" rel="noopener">調整さんを開くだけ</a>
+				</div>
+				<p class="muted" style="margin-top:8px;">候補は「調整さん」作成ページの『日程候補』欄にそのまま貼り付けできます。候補入りで開いた場合も、開いた先の「出欠表をつくる」を押すとリンクが完成します。</p>
+			</div>
+
+			<div class="card">
+				<label for="preview">プレビュー（この内容をコピーします）</label>
+				<textarea id="preview" placeholder="ここに候補が表示されます" readonly></textarea>
+			</div>
+
+			<p class="muted" style="margin-top:10px;">
+				Tips: 設定（開始日・時刻など）は端末に保存され、次回以降も引き継がれます。
+			</p>
+		</div>
+
+		<div id="toast" class="toast" role="status" aria-live="polite">コピーしました</div>
+		<script src="script.js" defer></script>
+	</body>
+</html>
