@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Chouseisan Google Calendar Auto Answer",
+  "version": "0.1.0",
+  "description": "調整さんの候補を Google カレンダーの空き状況から自動回答します。",
+  "permissions": ["storage"],
+  "host_permissions": ["https://chouseisan.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "調整さんを自動回答"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["https://chouseisan.com/s*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["https://chouseisan.com/*"]
+    }
+  ]
+}

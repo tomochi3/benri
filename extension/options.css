@@ -1,0 +1,145 @@
+:root {
+	color-scheme: light;
+	--bg: #f3f7fb;
+	--card: rgba(255, 255, 255, 0.92);
+	--ink: #0f172a;
+	--muted: #526072;
+	--line: #d7e0ea;
+	--accent: #0f766e;
+	--accent-strong: #115e59;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+	background:
+		radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 38%),
+		linear-gradient(180deg, #fcfffe 0%, var(--bg) 100%);
+	color: var(--ink);
+}
+
+.page {
+	width: min(760px, calc(100% - 32px));
+	margin: 40px auto;
+	display: grid;
+	gap: 20px;
+}
+
+.card {
+	background: var(--card);
+	border: 1px solid rgba(215, 224, 234, 0.88);
+	border-radius: 24px;
+	padding: 24px;
+	box-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
+	backdrop-filter: blur(12px);
+}
+
+.eyebrow {
+	margin: 0 0 8px;
+	font-size: 12px;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+h1,
+h2,
+p,
+ol {
+	margin-top: 0;
+}
+
+h1 {
+	margin-bottom: 10px;
+	font-size: clamp(28px, 5vw, 40px);
+	line-height: 1.05;
+}
+
+h2 {
+	margin-bottom: 12px;
+	font-size: 18px;
+}
+
+.lead,
+.note p,
+.note li,
+.field small,
+.status {
+	color: var(--muted);
+	line-height: 1.7;
+}
+
+.form {
+	display: grid;
+	gap: 18px;
+}
+
+.field {
+	display: grid;
+	gap: 8px;
+	font-weight: 700;
+}
+
+.field input {
+	width: 100%;
+	border: 1px solid var(--line);
+	border-radius: 14px;
+	padding: 14px 16px;
+	font: inherit;
+	color: var(--ink);
+	background: #fff;
+}
+
+.field input:focus {
+	outline: 3px solid rgba(15, 118, 110, 0.18);
+	border-color: var(--accent);
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-start;
+}
+
+button {
+	appearance: none;
+	border: none;
+	border-radius: 999px;
+	padding: 13px 20px;
+	font: inherit;
+	font-weight: 800;
+	color: #fff;
+	background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+	cursor: pointer;
+	box-shadow: 0 14px 28px rgba(15, 118, 110, 0.24);
+}
+
+button:hover {
+	transform: translateY(-1px);
+}
+
+.status {
+	min-height: 24px;
+	margin-top: 12px;
+	font-weight: 700;
+}
+
+@media (max-width: 640px) {
+	.page {
+		width: min(100%, calc(100% - 20px));
+		margin: 20px auto;
+	}
+
+	.card {
+		padding: 18px;
+		border-radius: 20px;
+	}
+
+	button {
+		width: 100%;
+	}
+}

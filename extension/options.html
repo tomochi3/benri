@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>調整さん 自動回答 設定</title>
+		<link rel="stylesheet" href="options.css" />
+	</head>
+	<body>
+		<main class="page">
+			<section class="card">
+				<p class="eyebrow">Chrome Extension</p>
+				<h1>調整さん 自動回答</h1>
+				<p class="lead">
+					拡張アイコンか、調整さんページに出るボタンを押すと、この設定を使って Google
+					カレンダーから出欠を自動入力します。
+				</p>
+
+				<form id="settingsForm" class="form">
+					<label class="field">
+						<span>Google OAuth クライアント ID</span>
+						<input id="googleClientId" name="googleClientId" type="text" autocomplete="off" required />
+					</label>
+
+					<label class="field">
+						<span>回答名</span>
+						<input id="participantName" name="participantName" type="text" autocomplete="name" required />
+					</label>
+
+					<label class="field">
+						<span>参照するカレンダー ID</span>
+						<input id="calendarIds" name="calendarIds" type="text" value="primary" required />
+						<small>複数あるときは `primary, team@example.com` のようにカンマ区切りで指定します。</small>
+					</label>
+
+					<div class="actions">
+						<button type="submit">設定を保存</button>
+					</div>
+				</form>
+
+				<div id="status" class="status" aria-live="polite"></div>
+			</section>
+
+			<section class="card note">
+				<h2>Google Cloud 側で必要な設定</h2>
+				<ol>
+					<li>Google Cloud で Web アプリ用の OAuth クライアントを作成します。</li>
+					<li>承認済み JavaScript 生成元に `https://chouseisan.com` を追加します。</li>
+					<li>保存後、調整さんのイベントページで拡張を実行します。</li>
+				</ol>
+				<p>
+					`終日` は 9:00-18:00、`19時~` のような終了時刻なし候補は 3 時間枠として判定します。
+				</p>
+			</section>
+		</main>
+
+		<script src="options.js"></script>
+	</body>
+</html>
