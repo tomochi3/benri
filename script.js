@@ -1,8 +1,9 @@
 const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
 const youbi = ['日', '月', '火', '水', '木', '金', '土'];
 const CHOUSEISAN_CREATE_URL = 'https://chouseisan.com/schedule/newEvent/create';
-const QUICK_EVENT_TITLE = '金曜夜・土日で空いてる日を教えてください';
-const QUICK_EVENT_COMMENT = '当日から2ヶ月先の金曜夜と土日で、空いている日を教えてください。';
+const QUICK_EVENT_TITLE = '金曜夜・土日で空いてる時間を教えてください';
+const QUICK_EVENT_COMMENT = '当日から2ヶ月先の金曜夜と土日で、空いている日や時間帯を教えてください。';
 
 function pad2(n) {
 	return String(n).padStart(2, '0');
@@ -76,7 +77,7 @@ function savePrefs(obj) {
 	} catch {}
 }
 
-function buildCandidateLines({ startDate, months, incFri, incSat, incSun, friTime }) {
+function buildCandidateLines({ startDate, months, incFri, incSat, incSun, friTime, weekendMode }) {
 	const endDate = addMonths(startDate, months);
 	const lines = [];
 	const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
@@ -87,30 +88,20 @@ function buildCandidateLines({ startDate, months, incFri, incSat, incSun, friTim
 			lines.push(fmtDateLine(d, `${friTime}～`));
 		}
 		if (incSat && day === 6) {
-			lines.push(fmtDateLine(d, '終日'));
+			if (weekendMode === 'split') {
+				lines.push(fmtDateLine(d, '9:00～13:00'));
+				lines.push(fmtDateLine(d, '13:00～17:00'));
+			} else {
+				lines.push(fmtDateLine(d, '終日'));
+			}
 		}
 		if (incSun && day === 0) {
-			lines.push(fmtDateLine(d, '終日'));
-		}
-		d.setDate(d.getDate() + 1);
-	}
-
-	return lines;
-}
-
-function buildQuickSplitLines({ startDate, months, friTime }) {
-	const endDate = addMonths(startDate, months);
-	const lines = [];
-	const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-
-	while (d < endDate) {
-		const day = d.getDay();
-		if (day === 5) {
-			lines.push(fmtDateLine(d, `${friTime}～`));
-		}
-		if (day === 6 || day === 0) {
-			lines.push(fmtDateLine(d, '9:00～13:00'));
-			lines.push(fmtDateLine(d, '13:00～17:00'));
+			if (weekendMode === 'split') {
+				lines.push(fmtDateLine(d, '9:00～13:00'));
+				lines.push(fmtDateLine(d, '13:00～17:00'));
+			} else {
+				lines.push(fmtDateLine(d, '終日'));
+			}
 		}
 		d.setDate(d.getDate() + 1);
 	}
@@ -125,7 +116,8 @@ function readFormSettings() {
 		incFri: $('#incFri').checked,
 		incSat: $('#incSat').checked,
 		incSun: $('#incSun').checked,
-		friTime: $('#friTime').value || '19:00'
+		friTime: $('#friTime').value || '19:00',
+		weekendMode: $('#weekendMode').value
 	};
 }
 
@@ -137,7 +129,8 @@ function persistCurrentPrefs(settings) {
 		friTime: settings.friTime,
 		incFri: settings.incFri,
 		incSat: settings.incSat,
-		incSun: settings.incSun
+		incSun: settings.incSun,
+		weekendMode: settings.weekendMode
 	});
 }
 
@@ -154,6 +147,7 @@ function generate() {
 	const lines = buildCandidateLines(settings);
 	updatePreview(lines);
 	persistCurrentPrefs(settings);
+	syncToggleChips();
 	return lines;
 }
 
@@ -196,6 +190,25 @@ function buildDetailedEventComment(title) {
 	return `${title}の日程調整です。ご都合のよい日を教えてください。`;
 }
 
+function syncToggleChips() {
+	$$('.toggle-chip').forEach((chip) => {
+		const input = chip.querySelector('input');
+		chip.classList.toggle('is-active', !!input?.checked);
+	});
+}
+
+function applyPreset({ weekendMode }) {
+	const today = new Date();
+	$('#startDate').value = toISODateInputValue(today);
+	$('#months').value = '2';
+	$('#friTime').value = '19:00';
+	$('#incFri').checked = true;
+	$('#incSat').checked = true;
+	$('#incSun').checked = true;
+	$('#weekendMode').value = weekendMode;
+	generate();
+}
+
 async function copyOnly() {
 	const text = $('#preview').value.trim();
 	if (!text) {
@@ -219,38 +232,13 @@ function openDetailedChouseisan() {
 }
 
 function launchQuickAllDayChouseisan() {
-	const today = new Date();
-	const lines = buildCandidateLines({
-		startDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-		months: 2,
-		incFri: true,
-		incSat: true,
-		incSun: true,
-		friTime: '19:00'
-	});
-	openPrefilledChouseisan({
-		title: QUICK_EVENT_TITLE,
-		comment: QUICK_EVENT_COMMENT,
-		lines,
-		suffix: '19:00〜',
-		addSuffix: false
-	});
+	applyPreset({ weekendMode: 'allDay' });
+	openDetailedChouseisan();
 }
 
 function launchQuickSplitChouseisan() {
-	const today = new Date();
-	const lines = buildQuickSplitLines({
-		startDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-		months: 2,
-		friTime: '19:00'
-	});
-	openPrefilledChouseisan({
-		title: QUICK_EVENT_TITLE,
-		comment: QUICK_EVENT_COMMENT,
-		lines,
-		suffix: '19:00〜',
-		addSuffix: false
-	});
+	applyPreset({ weekendMode: 'split' });
+	openDetailedChouseisan();
 }
 
 (function init() {
@@ -266,13 +254,16 @@ function launchQuickSplitChouseisan() {
 		if ('incFri' in prefs) $('#incFri').checked = !!prefs.incFri;
 		if ('incSat' in prefs) $('#incSat').checked = !!prefs.incSat;
 		if ('incSun' in prefs) $('#incSun').checked = !!prefs.incSun;
+		if (prefs.weekendMode) $('#weekendMode').value = prefs.weekendMode;
 	}
 
-	$('#generateBtn').addEventListener('click', generate);
 	$('#copyBtn').addEventListener('click', copyOnly);
 	$('#copyOpenBtn').addEventListener('click', openDetailedChouseisan);
 	$('#quickLaunchAllDayBtn').addEventListener('click', launchQuickAllDayChouseisan);
 	$('#quickLaunchSplitBtn').addEventListener('click', launchQuickSplitChouseisan);
+	['title', 'startDate', 'months', 'friTime', 'weekendMode', 'incFri', 'incSat', 'incSun'].forEach((id) => {
+		$(id.startsWith('#') ? id : `#${id}`).addEventListener(id === 'title' || id === 'friTime' ? 'input' : 'change', generate);
+	});
 
 	generate();
 })();

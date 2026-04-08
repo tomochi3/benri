@@ -57,37 +57,41 @@
 						<label for="friTime">金曜夜の開始時刻</label>
 						<input id="friTime" type="time" value="19:00" />
 					</div>
+					<div>
+						<label for="weekendMode">土日の候補形式</label>
+						<select id="weekendMode">
+							<option value="allDay" selected>終日</option>
+							<option value="split">9時~13時 / 13時~17時</option>
+						</select>
+					</div>
 				</div>
 
 				<div class="spacer"></div>
 
 				<div class="inline">
-					<div class="chip">
+					<label class="chip toggle-chip" for="incFri">
 						<input id="incFri" type="checkbox" checked />
-						<label for="incFri">金曜夜</label>
-					</div>
-					<div class="chip">
+						<span>金曜夜</span>
+					</label>
+					<label class="chip toggle-chip" for="incSat">
 						<input id="incSat" type="checkbox" checked />
-						<label for="incSat">土曜（終日）</label>
-					</div>
-					<div class="chip">
+						<span>土曜</span>
+					</label>
+					<label class="chip toggle-chip" for="incSun">
 						<input id="incSun" type="checkbox" checked />
-						<label for="incSun">日曜（終日）</label>
-					</div>
+						<span>日曜</span>
+					</label>
 				</div>
 
 				<div class="divider"></div>
 
 				<div class="btns">
-					<button id="generateBtn">候補を生成</button>
+					<button id="copyOpenBtn" class="success" disabled>この内容で調整さんを開く</button>
 					<button id="copyBtn" class="secondary" disabled>候補をコピー</button>
-					<button id="copyOpenBtn" class="success" disabled>候補入りで調整さんを開く</button>
 					<a class="btn secondary" href="https://chouseisan.com/" target="_blank" rel="noopener">調整さんを開くだけ</a>
 				</div>
-				<p class="muted" style="margin-top:8px;">候補は「調整さん」作成ページの『日程候補』欄にそのまま貼り付けできます。候補入りで開いた場合も、開いた先の「出欠表をつくる」を押すとリンクが完成します。</p>
-			</div>
-
-			<div class="card">
+				<p class="muted" style="margin-top:8px;">下のプレビューは自動更新されます。開いた先の「出欠表をつくる」を押すとリンクが完成します。</p>
+				<div class="divider"></div>
 				<label for="preview">プレビュー（この内容をコピーします）</label>
 				<textarea id="preview" placeholder="ここに候補が表示されます" readonly></textarea>
 			</div>
