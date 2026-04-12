@@ -13,7 +13,7 @@
 				<div class="logo" aria-hidden="true"></div>
 				<div>
 					<h1>調整さん 日程候補ジェネレーター</h1>
-					<p class="desc">ワンタップで候補入りの調整さん作成画面を開けます。必要なら下で細かく設定してから使えます。</p>
+					<p class="desc">ワンタップで候補入りの調整さん作成画面を開けます。</p>
 				</div>
 			</header>
 
@@ -25,80 +25,12 @@
 					<button id="quickLaunchAllDayBtn">金曜19時~/土日終日</button>
 					<button id="quickLaunchSplitBtn">金曜19時~/土日9~13時/土日13時~17時</button>
 				</div>
-				<a class="btn secondary quick-detail-link" href="#advancedSettings">詳細設定</a>
+				<div class="btns quick-subactions">
+					<button id="openRakutenUnsubscribeBtn" class="secondary">楽天メルマガを全部解約</button>
+				</div>
+				<p class="muted quick-subnote">楽天のメルマガと楽天ショップのメルマガをまとめて止める公式ページを開きます。</p>
+				<p class="muted quick-note">開いた先の「出欠表をつくる」を押すとリンクが完成します。</p>
 			</div>
-
-			<div id="advancedSettings" class="card" style="margin-bottom: 14px;">
-				<div class="section-head">
-					<div>
-						<p class="eyebrow">詳細設定</p>
-						<h2 class="section-title">タイトルや期間を調整して開く</h2>
-						<p class="section-copy">今までの細かい設定はそのまま使えます。ここから開く場合も、候補入りの調整さん作成画面へ進みます。</p>
-					</div>
-				</div>
-				<div class="grid cols-2">
-					<div>
-						<label for="title">イベント名（任意・メモ用）</label>
-						<input id="title" type="text" inputmode="text" placeholder="例: 飲み会の候補日" />
-					</div>
-					<div>
-						<label for="startDate">開始日</label>
-						<input id="startDate" type="date" />
-					</div>
-					<div>
-						<label for="months">対象期間</label>
-						<select id="months">
-							<option value="2" selected>2ヶ月</option>
-							<option value="1">1ヶ月</option>
-							<option value="3">3ヶ月</option>
-						</select>
-					</div>
-					<div>
-						<label for="friTime">金曜夜の開始時刻</label>
-						<input id="friTime" type="time" value="19:00" />
-					</div>
-					<div>
-						<label for="weekendMode">土日の候補形式</label>
-						<select id="weekendMode">
-							<option value="allDay" selected>終日</option>
-							<option value="split">9時~13時 / 13時~17時</option>
-						</select>
-					</div>
-				</div>
-
-				<div class="spacer"></div>
-
-				<div class="inline">
-					<label class="chip toggle-chip" for="incFri">
-						<input id="incFri" type="checkbox" checked />
-						<span>金曜夜</span>
-					</label>
-					<label class="chip toggle-chip" for="incSat">
-						<input id="incSat" type="checkbox" checked />
-						<span>土曜</span>
-					</label>
-					<label class="chip toggle-chip" for="incSun">
-						<input id="incSun" type="checkbox" checked />
-						<span>日曜</span>
-					</label>
-				</div>
-
-				<div class="divider"></div>
-
-				<div class="btns">
-					<button id="copyOpenBtn" class="success" disabled>この内容で調整さんを開く</button>
-					<button id="copyBtn" class="secondary" disabled>候補をコピー</button>
-					<a class="btn secondary" href="https://chouseisan.com/" target="_blank" rel="noopener">調整さんを開くだけ</a>
-				</div>
-				<p class="muted" style="margin-top:8px;">下のプレビューは自動更新されます。開いた先の「出欠表をつくる」を押すとリンクが完成します。</p>
-				<div class="divider"></div>
-				<label for="preview">プレビュー（この内容をコピーします）</label>
-				<textarea id="preview" placeholder="ここに候補が表示されます" readonly></textarea>
-			</div>
-
-			<p class="muted" style="margin-top:10px;">
-				Tips: 設定（開始日・時刻など）は端末に保存され、次回以降も引き継がれます。
-			</p>
 		</div>
 
 		<div id="toast" class="toast" role="status" aria-live="polite">コピーしました</div>

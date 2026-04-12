@@ -139,6 +139,19 @@ p.section-copy {
 	line-height: 1.5;
 }
 
+.quick-subactions {
+	margin-top: 10px;
+}
+
+.quick-subactions > * {
+	flex: 1 1 100%;
+	justify-content: center;
+}
+
+.quick-subnote {
+	margin: 10px 0 0;
+}
+
 label {
 	display: block;
 	font-size: .88rem;
