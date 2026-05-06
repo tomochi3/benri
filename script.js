@@ -164,7 +164,7 @@ function calcRM(weight, reps, divisor) {
 }
 
 function roundTo1(n) {
-	return Math.round(n * 10) / 10;
+	return Math.round(n);
 }
 
 function getLevel(val) {
