@@ -576,6 +576,8 @@ button.warn {
 .rm-table tbody tr.rm-highlight-row td {
 	background: rgba(168, 85, 247, 0.25) !important;
 	filter: brightness(1.4);
+	color: #ffffff !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 .rm-table tbody tr.rm-highlight-row td:first-child {
 	background: #4c1d95 !important;
@@ -583,31 +585,36 @@ button.warn {
 	filter: none;
 }
 
-/* 選択した列: 背景を明るくする */
-.rm-table th.rm-highlight-col,
+/* 選択した列: 背景を白にして完全に色反転（最も目立つ） */
 .rm-table td.rm-highlight-col {
-	background: rgba(139, 92, 246, 0.2) !important;
-	filter: brightness(1.3);
+	background: #f8fafc !important;
+	color: #0f172a !important;
+	font-weight: 800 !important;
+	filter: none !important;
+	text-shadow: none !important;
+	z-index: 2;
+	position: relative;
+	outline: none;
 }
 
-/* 選択したヘッダー: 色反転 */
+/* 選択したヘッダー: 濃い紫で反転 */
 .rm-table th.rm-highlight-col {
 	background: #7c3aed !important;
 	color: #fff !important;
 	filter: none;
 }
 
-/* 交差セル: 完全に色反転（白背景 + 黒文字） */
+/* 交差セル: 鮮明な紫で浮かび上がらせる */
 .rm-table td.rm-highlight-cell {
-	background: #e9d5ff !important;
-	color: #1e1b4b !important;
+	background: #a855f7 !important;
+	color: #ffffff !important;
 	font-weight: 900 !important;
 	filter: none !important;
-	outline: 3px solid #a78bfa;
+	outline: 3px solid #d8b4fe;
 	outline-offset: -1px;
 	z-index: 10;
 	position: relative;
-	text-shadow: none !important;
+	text-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
 	transform: scale(1.15);
 	box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
 	border-radius: 4px;

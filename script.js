@@ -234,6 +234,11 @@ function buildRmTable() {
 	if (formulaExpr) {
 		formulaExpr.textContent = config.formula;
 	}
+
+	// テーブルを再生成した後でも、選択状態を復元
+	if (typeof reapplyPersistentHighlights === 'function') {
+		reapplyPersistentHighlights();
+	}
 }
 
 function switchRmTab(tab) {
@@ -243,6 +248,19 @@ function switchRmTab(tab) {
 	document.querySelectorAll('.rm-tab').forEach(btn => {
 		btn.classList.toggle('is-active', btn.dataset.tab === tab);
 	});
+
+	// デフォルト値の切り替え
+	const minEl = $('#rmRangeMin');
+	const maxEl = $('#rmRangeMax');
+	if (minEl && maxEl) {
+		if (tab === 'bench') {
+			minEl.value = 40;
+			maxEl.value = 100;
+		} else if (tab === 'squat') {
+			minEl.value = 40;
+			maxEl.value = 120;
+		}
+	}
 
 	buildRmTable();
 }
@@ -275,4 +293,132 @@ function switchRmTab(tab) {
 
 	// 初回テーブル生成
 	buildRmTable();
+
+	// ==== RM表: 列/行ハイライト（選択 & ホバー） ====
+	const table = $('#rmTable');
+	let selectedColIndex = null; // 0-based（0は重量列）
+	let selectedRowIndex = null; // 0-based（tbody内の行）
+
+	function clearHighlights() {
+		if (!table) return;
+		table.querySelectorAll('th.rm-highlight-col').forEach(el => el.classList.remove('rm-highlight-col'));
+		table.querySelectorAll('td.rm-highlight-col').forEach(el => el.classList.remove('rm-highlight-col'));
+		table.querySelectorAll('tbody tr.rm-highlight-row').forEach(el => el.classList.remove('rm-highlight-row'));
+		table.querySelectorAll('td.rm-highlight-cell').forEach(el => el.classList.remove('rm-highlight-cell'));
+	}
+
+	function setHighlights(colIdx = null, rowIdx = null) {
+		if (!table) return;
+		clearHighlights();
+
+		const thead = table.tHead;
+		const tbody = table.tBodies[0];
+		if (!thead || !tbody) return;
+
+		// 列ハイライト
+		if (colIdx !== null) {
+			const ths = thead.rows[0]?.children || [];
+			if (ths[colIdx]) ths[colIdx].classList.add('rm-highlight-col');
+			const nth = colIdx + 1; // nth-child は 1-based
+			table.querySelectorAll(`tbody tr td:nth-child(${nth})`).forEach(td => td.classList.add('rm-highlight-col'));
+		}
+
+		// 行ハイライト + 交差セル
+		if (rowIdx !== null) {
+			const row = tbody.rows[rowIdx];
+			if (row) {
+				row.classList.add('rm-highlight-row');
+				if (colIdx !== null) {
+					const cross = row.children[colIdx];
+					if (cross) cross.classList.add('rm-highlight-cell');
+				}
+			}
+		}
+	}
+
+	function reapplyPersistentHighlights() {
+		setHighlights(selectedColIndex, selectedRowIndex);
+	}
+
+	// ホバーで即時にプレビュー
+	table.addEventListener('mouseover', (e) => {
+		const target = e.target;
+		if (!(target instanceof HTMLElement)) return;
+		if (target.tagName === 'TD') {
+			const rowEl = target.parentElement;
+			if (!rowEl || !rowEl.parentElement) return;
+			const rowIdx = Array.prototype.indexOf.call(rowEl.parentElement.children, rowEl);
+			const colIdx = Array.prototype.indexOf.call(rowEl.children, target);
+			if (colIdx === 0) {
+				setHighlights(null, rowIdx);
+			} else {
+				setHighlights(colIdx, rowIdx);
+			}
+		} else if (target.tagName === 'TH') {
+			const headRow = target.parentElement;
+			if (!headRow) return;
+			const colIdx = Array.prototype.indexOf.call(headRow.children, target);
+			if (colIdx > 0) setHighlights(colIdx, null);
+		}
+	});
+
+	// テーブル外れで永続選択を復元
+	table.addEventListener('mouseleave', () => {
+		if (selectedColIndex !== null || selectedRowIndex !== null) {
+			reapplyPersistentHighlights();
+		} else {
+			clearHighlights();
+		}
+	});
+
+	// クリックで選択を固定/解除
+	table.addEventListener('click', (e) => {
+		const target = e.target;
+		if (!(target instanceof HTMLElement)) return;
+		if (target.tagName === 'TH') {
+			const headRow = target.parentElement;
+			if (!headRow) return;
+			const colIdx = Array.prototype.indexOf.call(headRow.children, target);
+			if (colIdx === 0) return; // 重量列はスキップ
+			const isSame = selectedColIndex === colIdx && selectedRowIndex === null;
+			if (isSame) {
+				selectedColIndex = null;
+				selectedRowIndex = null;
+				clearHighlights();
+			} else {
+				selectedColIndex = colIdx;
+				selectedRowIndex = null;
+				reapplyPersistentHighlights();
+			}
+		} else if (target.tagName === 'TD') {
+			const rowEl = target.parentElement;
+			if (!rowEl || !rowEl.parentElement) return;
+			const rowIdx = Array.prototype.indexOf.call(rowEl.parentElement.children, rowEl);
+			const colIdx = Array.prototype.indexOf.call(rowEl.children, target);
+			if (colIdx === 0) {
+				// 行見出しをクリック → 行のみ選択
+				const isSame = selectedRowIndex === rowIdx && selectedColIndex === null;
+				if (isSame) {
+					selectedRowIndex = null;
+					clearHighlights();
+				} else {
+					selectedColIndex = null;
+					selectedRowIndex = rowIdx;
+					reapplyPersistentHighlights();
+				}
+			} else {
+				// 交差セル → 行と列の両方を選択
+				const isSame = selectedColIndex === colIdx && selectedRowIndex === rowIdx;
+				if (isSame) {
+					selectedColIndex = null;
+					selectedRowIndex = null;
+					clearHighlights();
+				} else {
+					selectedColIndex = colIdx;
+					selectedRowIndex = rowIdx;
+					reapplyPersistentHighlights();
+				}
+			}
+		}
+	});
 })();
