@@ -535,22 +535,6 @@ button.warn {
 	color: #e9d5ff;
 }
 
-/* 参考リンク */
-.rm-source {
-	margin: 12px 0 0;
-}
-
-.rm-source a {
-	color: #a78bfa;
-	text-decoration: none;
-	border-bottom: 1px solid rgba(167, 139, 250, 0.3);
-	transition: color .2s ease;
-}
-
-.rm-source a:hover {
-	color: #c4b5fd;
-}
-
 @media (max-width: 720px) {
 	.grid.cols-2 { grid-template-columns: 1fr; }
 
