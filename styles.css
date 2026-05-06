@@ -472,23 +472,35 @@ button.warn {
 
 /* セル */
 .rm-table td {
-	padding: 8px 12px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+	border-right: 1px solid rgba(148, 163, 184, 0.06);
 	color: var(--text);
 	text-align: center;
 	font-variant-numeric: tabular-nums;
-	transition: background .12s ease;
+	position: relative; /* クロスハイライト用 */
+}
+
+/* 偶数列の背景をわずかに変える（縦の視認性向上） */
+.rm-table td:nth-child(even) {
+	background: rgba(255, 255, 255, 0.02);
+}
+
+/* 5列目と10列目の右側に境界線を強調 */
+.rm-table td:nth-child(6),
+.rm-table th:nth-child(6) {
+	border-right: 2px solid rgba(148, 163, 184, 0.15);
 }
 
 /* 重量列（固定） */
 .rm-table td:first-child {
 	position: sticky;
 	left: 0;
-	z-index: 1;
+	z-index: 2;
 	text-align: left;
 	font-weight: 700;
 	color: #e2e8f0;
-	border-right: 2px solid rgba(192, 132, 252, 0.15);
+	border-right: 2px solid rgba(192, 132, 252, 0.3);
 	min-width: 70px;
 }
 
@@ -503,11 +515,11 @@ button.warn {
 
 /* 固定セルの背景を行に合わせる */
 .rm-table tbody tr td:first-child {
-	background: rgba(20, 30, 50, 0.97);
+	background: rgba(20, 30, 50, 0.98);
 }
 
 .rm-table tbody tr:nth-child(even) td:first-child {
-	background: rgba(28, 38, 55, 0.97);
+	background: rgba(28, 38, 55, 0.98);
 }
 
 /* 10kg区切り行のハイライト */
@@ -516,23 +528,47 @@ button.warn {
 }
 
 .rm-table tbody tr.rm-row-10k td:first-child {
-	background: rgba(35, 30, 55, 0.97);
+	background: rgba(35, 30, 55, 0.98);
 	color: #c4b5fd;
 }
 
-/* ホバー */
+/* --- クロスハイライト (十字ハイライト) --- */
+
+/* ホバーした行の背景 */
 .rm-table tbody tr:hover {
-	background: rgba(168, 85, 247, 0.1);
+	background: rgba(168, 85, 247, 0.15) !important;
 }
 
 .rm-table tbody tr:hover td:first-child {
-	background: rgba(55, 35, 80, 0.97);
+	background: rgba(55, 35, 80, 0.98) !important;
+}
+
+/* ホバーした列の背景 */
+.rm-table td:hover::after {
+	content: "";
+	position: absolute;
+	background-color: rgba(168, 85, 247, 0.08);
+	left: 0;
+	top: -5000px;
+	height: 10000px;
+	width: 100%;
+	z-index: -1;
+	pointer-events: none;
+}
+
+/* 交差セルの強調 */
+.rm-table td:hover {
+	background: rgba(168, 85, 247, 0.25) !important;
+	color: #fff;
+	font-weight: 700;
+	text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
 }
 
 /* 1RM列（2列目）のハイライト */
 .rm-table td.rm-cell-1rm {
 	font-weight: 700;
 	color: #e9d5ff;
+	border-right: 1px solid rgba(192, 132, 252, 0.2);
 }
 
 @media (max-width: 720px) {
