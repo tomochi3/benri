@@ -35,27 +35,37 @@
 			<div class="card rm-card">
 				<p class="eyebrow rm-eyebrow">筋トレ</p>
 				<h2 class="section-title">RM換算表</h2>
-				<p class="section-copy">1RMを入力すると各レップ数の推定重量を表示します。</p>
+				<p class="section-copy">重量×回数から最大挙上重量（1RM）を算出。2.5kg刻みの一覧表です。</p>
 
-				<div class="rm-input-row">
-					<label for="rmWeightInput">1RM (kg)</label>
-					<input type="number" id="rmWeightInput" placeholder="例: 100" min="0" step="0.5" />
+				<div class="rm-tabs" id="rmTabs">
+					<button class="rm-tab is-active" data-tab="bench" id="rmTabBench">ベンチプレス</button>
+					<button class="rm-tab" data-tab="squat" id="rmTabSquat">スクワット / デッドリフト</button>
+				</div>
+
+				<div class="rm-formula" id="rmFormula">
+					<span class="rm-formula-label">計算式:</span>
+					<span class="rm-formula-expr" id="rmFormulaExpr">最大挙上重量 ＝ 重量 × 回数 ÷ 40 ＋ 重量</span>
+				</div>
+
+				<div class="rm-controls">
+					<div class="rm-range-group">
+						<label for="rmRangeMin">重量範囲 (kg)</label>
+						<div class="rm-range-inputs">
+							<input type="number" id="rmRangeMin" value="20" min="0" step="2.5" />
+							<span class="rm-range-sep">〜</span>
+							<input type="number" id="rmRangeMax" value="200" min="0" step="2.5" />
+						</div>
+					</div>
 				</div>
 
 				<div class="rm-table-wrapper" id="rmTableWrapper">
 					<table class="rm-table" id="rmTable">
-						<thead>
-							<tr>
-								<th>レップ数</th>
-								<th>推定重量 (kg)</th>
-								<th>%1RM</th>
-								<th>強度</th>
-							</tr>
-						</thead>
-						<tbody id="rmTableBody">
-						</tbody>
+						<thead id="rmTableHead"></thead>
+						<tbody id="rmTableBody"></tbody>
 					</table>
 				</div>
+
+				<p class="muted rm-source">参考: <a href="https://fwj.jp/magazine/rm/" target="_blank" rel="noopener">FWJ RM換算表</a></p>
 			</div>
 		</div>
 

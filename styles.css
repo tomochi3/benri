@@ -324,158 +324,231 @@ button.warn {
 	color: #c084fc !important;
 }
 
-.rm-input-row {
+/* タブ */
+.rm-tabs {
+	display: flex;
+	gap: 6px;
 	margin: 16px 0 12px;
-	max-width: 240px;
 }
 
-.rm-input-row input[type="number"] {
-	width: 100%;
+.rm-tab {
+	appearance: none;
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	background: rgba(15, 23, 42, 0.5);
+	color: #94a3b8;
+	padding: 10px 18px;
+	border-radius: 10px;
+	font-size: .88rem;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: none;
+	transition: all .2s ease;
+}
+
+.rm-tab:hover {
+	background: rgba(168, 85, 247, 0.08);
+	color: #c4b5fd;
+}
+
+.rm-tab.is-active {
+	background: rgba(168, 85, 247, 0.18);
+	border-color: rgba(192, 132, 252, 0.5);
+	color: #e9d5ff;
+	box-shadow: 0 0 12px rgba(168, 85, 247, 0.15);
+}
+
+/* 計算式表示 */
+.rm-formula {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	padding: 10px 14px;
+	border-radius: 10px;
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.1);
+	margin-bottom: 14px;
+	font-size: .86rem;
+}
+
+.rm-formula-label {
+	color: #64748b;
+	font-weight: 600;
+}
+
+.rm-formula-expr {
+	color: #c4b5fd;
+	font-weight: 500;
+	font-family: "SF Mono", "Fira Code", monospace;
+	font-size: .82rem;
+}
+
+/* 重量範囲コントロール */
+.rm-controls {
+	margin-bottom: 14px;
+}
+
+.rm-range-group label {
+	display: block;
+	font-size: .84rem;
+	color: var(--sub);
+	margin-bottom: 6px;
+}
+
+.rm-range-inputs {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.rm-range-inputs input[type="number"] {
+	width: 100px;
 	background: #0b1220;
 	border: 1px solid rgba(148, 163, 184, 0.22);
 	color: var(--text);
-	padding: 12px;
-	border-radius: 12px;
+	padding: 10px 12px;
+	border-radius: 10px;
 	outline: none;
-	font-size: 1.1rem;
+	font-size: .95rem;
 	font-weight: 600;
-	letter-spacing: .02em;
+	font-variant-numeric: tabular-nums;
 	transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-.rm-input-row input[type="number"]:focus {
+.rm-range-inputs input[type="number"]:focus {
 	border-color: rgba(192, 132, 252, 0.55);
 	box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
 }
 
+.rm-range-sep {
+	color: #64748b;
+	font-size: .9rem;
+}
+
+/* テーブルラッパー */
 .rm-table-wrapper {
 	overflow-x: auto;
 	border-radius: 12px;
 	border: 1px solid rgba(148, 163, 184, 0.12);
 	margin-top: 8px;
+	max-height: 70vh;
+	overflow-y: auto;
 }
 
+/* テーブル本体 */
 .rm-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: .92rem;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: .85rem;
 	white-space: nowrap;
+	min-width: 100%;
 }
 
-.rm-table thead {
+/* ヘッダー */
+.rm-table th {
 	position: sticky;
 	top: 0;
-	z-index: 2;
-}
-
-.rm-table th {
-	background: rgba(30, 41, 59, 0.95);
+	z-index: 3;
+	background: rgba(30, 41, 59, 0.97);
 	color: #94a3b8;
-	font-weight: 600;
-	font-size: .82rem;
+	font-weight: 700;
+	font-size: .76rem;
 	letter-spacing: .06em;
 	text-transform: uppercase;
-	padding: 12px 16px;
-	text-align: left;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-	backdrop-filter: blur(4px);
+	padding: 10px 12px;
+	text-align: center;
+	border-bottom: 2px solid rgba(192, 132, 252, 0.25);
+	backdrop-filter: blur(6px);
 }
 
 .rm-table th:first-child {
-	border-radius: 12px 0 0 0;
+	position: sticky;
+	left: 0;
+	z-index: 4;
+	text-align: left;
+	border-right: 2px solid rgba(192, 132, 252, 0.25);
+	min-width: 70px;
 }
 
-.rm-table th:last-child {
-	border-radius: 0 12px 0 0;
-}
-
+/* セル */
 .rm-table td {
-	padding: 11px 16px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.07);
+	padding: 8px 12px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.06);
 	color: var(--text);
-	transition: background .15s ease;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	transition: background .12s ease;
 }
 
+/* 重量列（固定） */
+.rm-table td:first-child {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	text-align: left;
+	font-weight: 700;
+	color: #e2e8f0;
+	border-right: 2px solid rgba(192, 132, 252, 0.15);
+	min-width: 70px;
+}
+
+/* 行の背景 */
 .rm-table tbody tr {
-	background: rgba(15, 23, 42, 0.4);
+	background: rgba(15, 23, 42, 0.45);
 }
 
 .rm-table tbody tr:nth-child(even) {
 	background: rgba(30, 41, 59, 0.3);
 }
 
+/* 固定セルの背景を行に合わせる */
+.rm-table tbody tr td:first-child {
+	background: rgba(20, 30, 50, 0.97);
+}
+
+.rm-table tbody tr:nth-child(even) td:first-child {
+	background: rgba(28, 38, 55, 0.97);
+}
+
+/* 10kg区切り行のハイライト */
+.rm-table tbody tr.rm-row-10k {
+	background: rgba(168, 85, 247, 0.06);
+}
+
+.rm-table tbody tr.rm-row-10k td:first-child {
+	background: rgba(35, 30, 55, 0.97);
+	color: #c4b5fd;
+}
+
+/* ホバー */
 .rm-table tbody tr:hover {
-	background: rgba(168, 85, 247, 0.08);
+	background: rgba(168, 85, 247, 0.1);
 }
 
-.rm-table td:first-child {
+.rm-table tbody tr:hover td:first-child {
+	background: rgba(55, 35, 80, 0.97);
+}
+
+/* 1RM列（2列目）のハイライト */
+.rm-table td.rm-cell-1rm {
 	font-weight: 700;
-	color: #e2e8f0;
+	color: #e9d5ff;
 }
 
-.rm-table td:nth-child(2) {
-	font-variant-numeric: tabular-nums;
-	font-weight: 600;
-	color: #f1f5f9;
-	font-size: .95rem;
+/* 参考リンク */
+.rm-source {
+	margin: 12px 0 0;
 }
 
-.rm-table td:nth-child(3) {
-	font-variant-numeric: tabular-nums;
-	color: #94a3b8;
+.rm-source a {
+	color: #a78bfa;
+	text-decoration: none;
+	border-bottom: 1px solid rgba(167, 139, 250, 0.3);
+	transition: color .2s ease;
 }
 
-.rm-table tbody tr:last-child td:first-child {
-	border-radius: 0 0 0 12px;
-}
-
-.rm-table tbody tr:last-child td:last-child {
-	border-radius: 0 0 12px 0;
-}
-
-.rm-table tbody tr:last-child td {
-	border-bottom: none;
-}
-
-/* 強度バッジ */
-.intensity-badge {
-	display: inline-flex;
-	align-items: center;
-	padding: 3px 10px;
-	border-radius: 999px;
-	font-size: .78rem;
-	font-weight: 600;
-	letter-spacing: .02em;
-}
-
-.intensity-max {
-	background: rgba(239, 68, 68, 0.15);
-	color: #fca5a5;
-	border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.intensity-high {
-	background: rgba(245, 158, 11, 0.15);
-	color: #fcd34d;
-	border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.intensity-mid {
-	background: rgba(34, 197, 94, 0.15);
-	color: #86efac;
-	border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.intensity-low {
-	background: rgba(59, 130, 246, 0.15);
-	color: #93c5fd;
-	border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.intensity-endurance {
-	background: rgba(148, 163, 184, 0.1);
-	color: #cbd5e1;
-	border: 1px solid rgba(148, 163, 184, 0.2);
+.rm-source a:hover {
+	color: #c4b5fd;
 }
 
 @media (max-width: 720px) {
@@ -490,5 +563,29 @@ button.warn {
 
 	.quick-actions {
 		grid-template-columns: 1fr;
+	}
+
+	.rm-tabs {
+		flex-direction: column;
+	}
+
+	.rm-tab {
+		width: 100%;
+		text-align: center;
+	}
+
+	.rm-range-inputs input[type="number"] {
+		width: 80px;
+	}
+
+	.rm-table th,
+	.rm-table td {
+		padding: 7px 8px;
+		font-size: .78rem;
+	}
+
+	.rm-table th:first-child,
+	.rm-table td:first-child {
+		min-width: 58px;
 	}
 }
