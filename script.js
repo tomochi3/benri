@@ -160,12 +160,21 @@ let rmCurrentTab = 'bench';
 
 function calcRM(weight, reps, divisor) {
 	if (reps <= 0) return weight;
-	// 1RM = weight × reps ÷ divisor + weight
 	return weight * reps / divisor + weight;
 }
 
 function roundTo1(n) {
 	return Math.round(n * 10) / 10;
+}
+
+function getLevel(val) {
+	if (val < 30) return 'rm-lv1';
+	if (val < 60) return 'rm-lv2';
+	if (val < 90) return 'rm-lv3';
+	if (val < 120) return 'rm-lv4';
+	if (val < 160) return 'rm-lv5';
+	if (val < 200) return 'rm-lv6';
+	return 'rm-lv7';
 }
 
 function buildRmTable() {
@@ -176,13 +185,11 @@ function buildRmTable() {
 	let min = parseFloat(minEl.value) || 20;
 	let max = parseFloat(maxEl.value) || 200;
 
-	// 2.5kg 刻みに丸める
 	min = Math.round(min / 2.5) * 2.5;
 	max = Math.round(max / 2.5) * 2.5;
 	if (min > max) { const t = min; min = max; max = t; }
 	if (min < 0) min = 0;
 
-	// 最大行数を制限
 	const maxRows = 200;
 	const steps = Math.round((max - min) / 2.5) + 1;
 	if (steps > maxRows) {
@@ -191,16 +198,16 @@ function buildRmTable() {
 
 	const config = RM_CONFIG[rmCurrentTab];
 
-	// ヘッダー生成
+	// ヘッダー
 	const thead = $('#rmTableHead');
-	let headHtml = '<tr><th>重量</th>';
+	let headHtml = '<tr><th>重量<small>kg</small></th>';
 	RM_REPS.forEach(r => {
-		headHtml += `<th>${r}回</th>`;
+		headHtml += `<th>${r}<small>回</small></th>`;
 	});
 	headHtml += '</tr>';
 	thead.innerHTML = headHtml;
 
-	// ボディ生成
+	// ボディ
 	const tbody = $('#rmTableBody');
 	let bodyHtml = '';
 
@@ -208,14 +215,14 @@ function buildRmTable() {
 		const is10k = w % 10 === 0;
 		const rowClass = is10k ? ' class="rm-row-10k"' : '';
 		bodyHtml += `<tr${rowClass}>`;
-		bodyHtml += `<td>${w}</td>`;
+		bodyHtml += `<td>${w}<small>kg</small></td>`;
 
 		RM_REPS.forEach(r => {
 			const rm = calcRM(w, r, config.divisor);
 			const val = roundTo1(rm);
-			// 1回の列は重量そのまま（=重量自体がRM）
-			const cellClass = r === 1 ? ' class="rm-cell-1rm"' : '';
-			bodyHtml += `<td${cellClass}>${val}</td>`;
+			const lv = getLevel(val);
+			const cls = r === 1 ? `${lv} rm-cell-1rm` : lv;
+			bodyHtml += `<td class="${cls}">${val}</td>`;
 		});
 
 		bodyHtml += '</tr>';
@@ -223,7 +230,6 @@ function buildRmTable() {
 
 	tbody.innerHTML = bodyHtml;
 
-	// 計算式を更新
 	const formulaExpr = $('#rmFormulaExpr');
 	if (formulaExpr) {
 		formulaExpr.textContent = config.formula;
