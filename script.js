@@ -141,8 +141,132 @@ function openRakutenUnsubscribe() {
 	showToast('楽天メルマガの停止ページを開いています');
 }
 
+/* ── RM換算表 ─────────────────────────── */
+
+const RM_CONFIG = {
+	bench: {
+		divisor: 40,
+		formula: '最大挙上重量 ＝ 重量 × 回数 ÷ 40 ＋ 重量'
+	},
+	squat: {
+		divisor: 33.3,
+		formula: '最大挙上重量 ＝ 重量 × 回数 ÷ 33.3 ＋ 重量'
+	}
+};
+
+const RM_REPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+let rmCurrentTab = 'bench';
+
+function calcRM(weight, reps, divisor) {
+	if (reps <= 0) return weight;
+	// 1RM = weight × reps ÷ divisor + weight
+	return weight * reps / divisor + weight;
+}
+
+function roundTo1(n) {
+	return Math.round(n * 10) / 10;
+}
+
+function buildRmTable() {
+	const minEl = $('#rmRangeMin');
+	const maxEl = $('#rmRangeMax');
+	if (!minEl || !maxEl) return;
+
+	let min = parseFloat(minEl.value) || 20;
+	let max = parseFloat(maxEl.value) || 200;
+
+	// 2.5kg 刻みに丸める
+	min = Math.round(min / 2.5) * 2.5;
+	max = Math.round(max / 2.5) * 2.5;
+	if (min > max) { const t = min; min = max; max = t; }
+	if (min < 0) min = 0;
+
+	// 最大行数を制限
+	const maxRows = 200;
+	const steps = Math.round((max - min) / 2.5) + 1;
+	if (steps > maxRows) {
+		max = min + (maxRows - 1) * 2.5;
+	}
+
+	const config = RM_CONFIG[rmCurrentTab];
+
+	// ヘッダー生成
+	const thead = $('#rmTableHead');
+	let headHtml = '<tr><th>重量</th>';
+	RM_REPS.forEach(r => {
+		headHtml += `<th>${r}回</th>`;
+	});
+	headHtml += '</tr>';
+	thead.innerHTML = headHtml;
+
+	// ボディ生成
+	const tbody = $('#rmTableBody');
+	let bodyHtml = '';
+
+	for (let w = min; w <= max; w = Math.round((w + 2.5) * 10) / 10) {
+		const is10k = w % 10 === 0;
+		const rowClass = is10k ? ' class="rm-row-10k"' : '';
+		bodyHtml += `<tr${rowClass}>`;
+		bodyHtml += `<td>${w}</td>`;
+
+		RM_REPS.forEach(r => {
+			const rm = calcRM(w, r, config.divisor);
+			const val = roundTo1(rm);
+			// 1回の列は重量そのまま（=重量自体がRM）
+			const cellClass = r === 1 ? ' class="rm-cell-1rm"' : '';
+			bodyHtml += `<td${cellClass}>${val}</td>`;
+		});
+
+		bodyHtml += '</tr>';
+	}
+
+	tbody.innerHTML = bodyHtml;
+
+	// 計算式を更新
+	const formulaExpr = $('#rmFormulaExpr');
+	if (formulaExpr) {
+		formulaExpr.textContent = config.formula;
+	}
+}
+
+function switchRmTab(tab) {
+	rmCurrentTab = tab;
+
+	// タブのアクティブ状態を更新
+	document.querySelectorAll('.rm-tab').forEach(btn => {
+		btn.classList.toggle('is-active', btn.dataset.tab === tab);
+	});
+
+	buildRmTable();
+}
+
 (function init() {
 	$('#quickLaunchAllDayBtn').addEventListener('click', launchQuickAllDayChouseisan);
 	$('#quickLaunchSplitBtn').addEventListener('click', launchQuickSplitChouseisan);
 	$('#openRakutenUnsubscribeBtn').addEventListener('click', openRakutenUnsubscribe);
+
+	// RM換算表の初期化
+	const tabBench = $('#rmTabBench');
+	const tabSquat = $('#rmTabSquat');
+	const rangeMin = $('#rmRangeMin');
+	const rangeMax = $('#rmRangeMax');
+
+	if (tabBench && tabSquat) {
+		tabBench.addEventListener('click', () => switchRmTab('bench'));
+		tabSquat.addEventListener('click', () => switchRmTab('squat'));
+	}
+
+	if (rangeMin && rangeMax) {
+		let debounceTimer;
+		const debouncedBuild = () => {
+			clearTimeout(debounceTimer);
+			debounceTimer = setTimeout(buildRmTable, 300);
+		};
+		rangeMin.addEventListener('input', debouncedBuild);
+		rangeMax.addEventListener('input', debouncedBuild);
+	}
+
+	// 初回テーブル生成
+	buildRmTable();
 })();
