@@ -254,10 +254,10 @@ function switchRmTab(tab) {
 	const maxEl = $('#rmRangeMax');
 	if (minEl && maxEl) {
 		if (tab === 'bench') {
-			minEl.value = 40;
+			minEl.value = 50;
 			maxEl.value = 100;
 		} else if (tab === 'squat') {
-			minEl.value = 40;
+			minEl.value = 60;
 			maxEl.value = 120;
 		}
 	}
