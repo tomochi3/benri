@@ -158,6 +158,34 @@ const RM_REPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 let rmCurrentTab = 'bench';
 
+const RM_DEFAULTS = {
+	bench: { min: 50, max: 100 },
+	squat: { min: 80, max: 120 }
+};
+
+function saveRmRange(tab, min, max) {
+	try { localStorage.setItem(`rm_range_${tab}`, JSON.stringify({ min, max })); } catch (e) { /* ignore */ }
+}
+
+function loadRmRange(tab) {
+	try {
+		const saved = localStorage.getItem(`rm_range_${tab}`);
+		if (saved) {
+			const parsed = JSON.parse(saved);
+			if (typeof parsed.min === 'number' && typeof parsed.max === 'number') return parsed;
+		}
+	} catch (e) { /* ignore */ }
+	return RM_DEFAULTS[tab] || { min: 20, max: 200 };
+}
+
+function saveRmTab(tab) {
+	try { localStorage.setItem('rm_active_tab', tab); } catch (e) { /* ignore */ }
+}
+
+function loadRmTab() {
+	try { return localStorage.getItem('rm_active_tab') || 'bench'; } catch (e) { return 'bench'; }
+}
+
 function calcRM(weight, reps, divisor) {
 	if (reps <= 0) return weight;
 	return weight * reps / divisor + weight;
@@ -241,25 +269,31 @@ function buildRmTable() {
 	}
 }
 
-function switchRmTab(tab) {
+function switchRmTab(tab, isInit = false) {
+	// 現タブの値を保存（初回呼び出し時はスキップ）
+	if (!isInit) {
+		const curMin = $('#rmRangeMin');
+		const curMax = $('#rmRangeMax');
+		if (curMin && curMax) {
+			saveRmRange(rmCurrentTab, parseFloat(curMin.value), parseFloat(curMax.value));
+		}
+	}
+
 	rmCurrentTab = tab;
+	saveRmTab(tab);
 
 	// タブのアクティブ状態を更新
 	document.querySelectorAll('.rm-tab').forEach(btn => {
 		btn.classList.toggle('is-active', btn.dataset.tab === tab);
 	});
 
-	// デフォルト値の切り替え
+	// 保存値を復元（なければデフォルト）
 	const minEl = $('#rmRangeMin');
 	const maxEl = $('#rmRangeMax');
 	if (minEl && maxEl) {
-		if (tab === 'bench') {
-			minEl.value = 50;
-			maxEl.value = 100;
-		} else if (tab === 'squat') {
-			minEl.value = 80;
-			maxEl.value = 120;
-		}
+		const range = loadRmRange(tab);
+		minEl.value = range.min;
+		maxEl.value = range.max;
 	}
 
 	buildRmTable();
@@ -285,14 +319,17 @@ function switchRmTab(tab) {
 		let debounceTimer;
 		const debouncedBuild = () => {
 			clearTimeout(debounceTimer);
-			debounceTimer = setTimeout(buildRmTable, 300);
+			debounceTimer = setTimeout(() => {
+				saveRmRange(rmCurrentTab, parseFloat(rangeMin.value), parseFloat(rangeMax.value));
+				buildRmTable();
+			}, 300);
 		};
 		rangeMin.addEventListener('input', debouncedBuild);
 		rangeMax.addEventListener('input', debouncedBuild);
 	}
 
-	// 初回テーブル生成
-	buildRmTable();
+	// 初回: 保存されたタブとレンジを復元してテーブル生成
+	switchRmTab(loadRmTab(), true);
 
 	// ==== RM表: 列/行ハイライト（選択 & ホバー） ====
 	const table = $('#rmTable');
