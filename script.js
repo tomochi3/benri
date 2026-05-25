@@ -257,7 +257,7 @@ function switchRmTab(tab) {
 			minEl.value = 50;
 			maxEl.value = 100;
 		} else if (tab === 'squat') {
-			minEl.value = 60;
+			minEl.value = 80;
 			maxEl.value = 120;
 		}
 	}
