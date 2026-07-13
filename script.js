@@ -20,7 +20,7 @@ function addMonths(date, months) {
 	const d = new Date(date.getTime());
 	const day = d.getDate();
 	d.setMonth(d.getMonth() + months);
-	// 月末超過の調整（例: 1/31 +1ヶ月 → 3/2 にならないように）
+	// 月末超過の調整(例: 1/31 +1ヶ月 → 3/2 にならないように)
 	while (d.getDate() < day) {
 		d.setDate(d.getDate() - 1);
 	}
@@ -158,6 +158,11 @@ const RM_REPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 let rmCurrentTab = 'bench';
 
+// 選択状態は行・列のインデックスではなく「重量×回数」の値で保持する。
+// タブ切替や範囲変更でテーブルが再生成されても、同じ意味のセルに復元できる。
+let rmSelectedWeight = null;
+let rmSelectedReps = null;
+
 const RM_DEFAULTS = {
 	bench: { min: 50, max: 100 },
 	squat: { min: 80, max: 120 }
@@ -205,13 +210,97 @@ function getLevel(val) {
 	return 'rm-lv7';
 }
 
+/* ── ハイライト(ホバーでプレビュー、クリック/矢印キーで固定) ── */
+
+function rmGetTable() {
+	return $('#rmTable');
+}
+
+function clearRmHighlights() {
+	const table = rmGetTable();
+	if (!table) return;
+	table.querySelectorAll('.rm-highlight-col, .rm-highlight-row, .rm-highlight-cell').forEach(el => {
+		el.classList.remove('rm-highlight-col', 'rm-highlight-row', 'rm-highlight-cell');
+	});
+}
+
+// colIdx は 0 始まりのセル位置(0 は重量列)、row は tr 要素
+function applyRmHighlights(colIdx, row) {
+	clearRmHighlights();
+	const table = rmGetTable();
+	if (!table) return;
+
+	if (colIdx != null && colIdx > 0) {
+		const ths = table.tHead?.rows[0]?.children || [];
+		if (ths[colIdx]) ths[colIdx].classList.add('rm-highlight-col');
+		table.querySelectorAll(`tbody tr td:nth-child(${colIdx + 1})`).forEach(td => td.classList.add('rm-highlight-col'));
+	}
+
+	if (row) {
+		row.classList.add('rm-highlight-row');
+		if (colIdx != null && colIdx > 0) {
+			const cross = row.children[colIdx];
+			if (cross) cross.classList.add('rm-highlight-cell');
+		}
+	}
+}
+
+function rmRowForWeight(weight) {
+	const table = rmGetTable();
+	const tbody = table && table.tBodies[0];
+	if (!tbody || weight == null) return null;
+	return tbody.querySelector(`tr[data-weight="${weight}"]`);
+}
+
+// 保持している選択値を現在のテーブルに適用する。
+// 再生成後に選択値がテーブルに存在しなければ、その選択は破棄する。
+function applySelectedRmHighlights() {
+	let row = null;
+	let colIdx = null;
+
+	if (rmSelectedWeight != null) {
+		row = rmRowForWeight(rmSelectedWeight);
+		if (!row) {
+			// 選択していた重量が範囲外になったら、セル選択はまとめて解除する
+			rmSelectedWeight = null;
+			rmSelectedReps = null;
+		}
+	}
+	if (rmSelectedReps != null) {
+		const i = RM_REPS.indexOf(rmSelectedReps);
+		if (i === -1) rmSelectedReps = null;
+		else colIdx = i + 1;
+	}
+
+	applyRmHighlights(colIdx, row);
+}
+
+// スクリーンリーダー向けに選択内容を通知
+function announceRmSelection() {
+	const live = $('#rmLive');
+	if (!live) return;
+	if (rmSelectedWeight != null && rmSelectedReps != null) {
+		const row = rmRowForWeight(rmSelectedWeight);
+		const val = row?.children[RM_REPS.indexOf(rmSelectedReps) + 1]?.textContent || '';
+		live.textContent = `${rmSelectedWeight}kg × ${rmSelectedReps}回 → 推定 ${val}kg`;
+	} else if (rmSelectedReps != null) {
+		live.textContent = `${rmSelectedReps}回の列を選択しました`;
+	} else if (rmSelectedWeight != null) {
+		live.textContent = `${rmSelectedWeight}kgの行を選択しました`;
+	} else {
+		live.textContent = '選択を解除しました';
+	}
+}
+
 function buildRmTable() {
 	const minEl = $('#rmRangeMin');
 	const maxEl = $('#rmRangeMax');
 	if (!minEl || !maxEl) return;
 
-	let min = parseFloat(minEl.value) || 20;
-	let max = parseFloat(maxEl.value) || 200;
+	const minRaw = parseFloat(minEl.value);
+	const maxRaw = parseFloat(maxEl.value);
+	let min = Number.isFinite(minRaw) ? minRaw : 20;
+	let max = Number.isFinite(maxRaw) ? maxRaw : 200;
 
 	min = Math.round(min / 2.5) * 2.5;
 	max = Math.round(max / 2.5) * 2.5;
@@ -228,9 +317,9 @@ function buildRmTable() {
 
 	// ヘッダー
 	const thead = $('#rmTableHead');
-	let headHtml = '<tr><th>重量<small>kg</small></th>';
+	let headHtml = '<tr><th scope="col">重量<small>kg</small></th>';
 	RM_REPS.forEach(r => {
-		headHtml += `<th>${r}<small>回</small></th>`;
+		headHtml += `<th scope="col" data-reps="${r}">${r}<small>回</small></th>`;
 	});
 	headHtml += '</tr>';
 	thead.innerHTML = headHtml;
@@ -242,8 +331,8 @@ function buildRmTable() {
 	for (let w = min; w <= max; w = Math.round((w + 2.5) * 10) / 10) {
 		const is10k = w % 10 === 0;
 		const rowClass = is10k ? ' class="rm-row-10k"' : '';
-		bodyHtml += `<tr${rowClass}>`;
-		bodyHtml += `<td>${w}<small>kg</small></td>`;
+		bodyHtml += `<tr${rowClass} data-weight="${w}">`;
+		bodyHtml += `<th scope="row">${w}<small>kg</small></th>`;
 
 		RM_REPS.forEach(r => {
 			const rm = calcRM(w, r, config.divisor);
@@ -263,14 +352,12 @@ function buildRmTable() {
 		formulaExpr.textContent = config.formula;
 	}
 
-	// テーブルを再生成した後でも、選択状態を復元
-	if (typeof reapplyPersistentHighlights === 'function') {
-		reapplyPersistentHighlights();
-	}
+	// テーブルを再生成した後でも、選択状態(重量×回数)を復元
+	applySelectedRmHighlights();
 }
 
 function switchRmTab(tab, isInit = false) {
-	// 現タブの値を保存（初回呼び出し時はスキップ）
+	// 現タブの値を保存(初回呼び出し時はスキップ)
 	if (!isInit) {
 		const curMin = $('#rmRangeMin');
 		const curMax = $('#rmRangeMax');
@@ -284,10 +371,12 @@ function switchRmTab(tab, isInit = false) {
 
 	// タブのアクティブ状態を更新
 	document.querySelectorAll('.rm-tab').forEach(btn => {
-		btn.classList.toggle('is-active', btn.dataset.tab === tab);
+		const active = btn.dataset.tab === tab;
+		btn.classList.toggle('is-active', active);
+		btn.setAttribute('aria-pressed', active ? 'true' : 'false');
 	});
 
-	// 保存値を復元（なければデフォルト）
+	// 保存値を復元(なければデフォルト)
 	const minEl = $('#rmRangeMin');
 	const maxEl = $('#rmRangeMax');
 	if (minEl && maxEl) {
@@ -331,131 +420,93 @@ function switchRmTab(tab, isInit = false) {
 	// 初回: 保存されたタブとレンジを復元してテーブル生成
 	switchRmTab(loadRmTab(), true);
 
-	// ==== RM表: 列/行ハイライト（選択 & ホバー） ====
+	// ==== RM表: 列/行ハイライト(ホバーでプレビュー、クリック/矢印キーで固定) ====
 	const table = $('#rmTable');
-	let selectedColIndex = null; // 0-based（0は重量列）
-	let selectedRowIndex = null; // 0-based（tbody内の行）
-
-	function clearHighlights() {
-		if (!table) return;
-		table.querySelectorAll('th.rm-highlight-col').forEach(el => el.classList.remove('rm-highlight-col'));
-		table.querySelectorAll('td.rm-highlight-col').forEach(el => el.classList.remove('rm-highlight-col'));
-		table.querySelectorAll('tbody tr.rm-highlight-row').forEach(el => el.classList.remove('rm-highlight-row'));
-		table.querySelectorAll('td.rm-highlight-cell').forEach(el => el.classList.remove('rm-highlight-cell'));
-	}
-
-	function setHighlights(colIdx = null, rowIdx = null) {
-		if (!table) return;
-		clearHighlights();
-
-		const thead = table.tHead;
-		const tbody = table.tBodies[0];
-		if (!thead || !tbody) return;
-
-		// 列ハイライト
-		if (colIdx !== null) {
-			const ths = thead.rows[0]?.children || [];
-			if (ths[colIdx]) ths[colIdx].classList.add('rm-highlight-col');
-			const nth = colIdx + 1; // nth-child は 1-based
-			table.querySelectorAll(`tbody tr td:nth-child(${nth})`).forEach(td => td.classList.add('rm-highlight-col'));
-		}
-
-		// 行ハイライト + 交差セル
-		if (rowIdx !== null) {
-			const row = tbody.rows[rowIdx];
-			if (row) {
-				row.classList.add('rm-highlight-row');
-				if (colIdx !== null) {
-					const cross = row.children[colIdx];
-					if (cross) cross.classList.add('rm-highlight-cell');
-				}
-			}
-		}
-	}
-
-	function reapplyPersistentHighlights() {
-		setHighlights(selectedColIndex, selectedRowIndex);
-	}
+	const wrapper = $('#rmTableWrapper');
+	if (!table || !wrapper) return;
 
 	// ホバーで即時にプレビュー
 	table.addEventListener('mouseover', (e) => {
-		const target = e.target;
-		if (!(target instanceof HTMLElement)) return;
-		if (target.tagName === 'TD') {
-			const rowEl = target.parentElement;
-			if (!rowEl || !rowEl.parentElement) return;
-			const rowIdx = Array.prototype.indexOf.call(rowEl.parentElement.children, rowEl);
-			const colIdx = Array.prototype.indexOf.call(rowEl.children, target);
-			if (colIdx === 0) {
-				setHighlights(null, rowIdx);
-			} else {
-				setHighlights(colIdx, rowIdx);
-			}
-		} else if (target.tagName === 'TH') {
-			const headRow = target.parentElement;
-			if (!headRow) return;
-			const colIdx = Array.prototype.indexOf.call(headRow.children, target);
-			if (colIdx > 0) setHighlights(colIdx, null);
+		const cell = e.target instanceof Element ? e.target.closest('th, td') : null;
+		if (!cell || !table.contains(cell)) return;
+		const idx = cell.cellIndex;
+		if (cell.closest('thead')) {
+			if (idx > 0) applyRmHighlights(idx, null);
+		} else {
+			applyRmHighlights(idx > 0 ? idx : null, cell.closest('tr'));
 		}
 	});
 
-	// テーブル外れで永続選択を復元
-	table.addEventListener('mouseleave', () => {
-		if (selectedColIndex !== null || selectedRowIndex !== null) {
-			reapplyPersistentHighlights();
-		} else {
-			clearHighlights();
-		}
-	});
+	// テーブル外れで固定選択を復元
+	table.addEventListener('mouseleave', applySelectedRmHighlights);
 
 	// クリックで選択を固定/解除
 	table.addEventListener('click', (e) => {
-		const target = e.target;
-		if (!(target instanceof HTMLElement)) return;
-		if (target.tagName === 'TH') {
-			const headRow = target.parentElement;
-			if (!headRow) return;
-			const colIdx = Array.prototype.indexOf.call(headRow.children, target);
-			if (colIdx === 0) return; // 重量列はスキップ
-			const isSame = selectedColIndex === colIdx && selectedRowIndex === null;
-			if (isSame) {
-				selectedColIndex = null;
-				selectedRowIndex = null;
-				clearHighlights();
-			} else {
-				selectedColIndex = colIdx;
-				selectedRowIndex = null;
-				reapplyPersistentHighlights();
-			}
-		} else if (target.tagName === 'TD') {
-			const rowEl = target.parentElement;
-			if (!rowEl || !rowEl.parentElement) return;
-			const rowIdx = Array.prototype.indexOf.call(rowEl.parentElement.children, rowEl);
-			const colIdx = Array.prototype.indexOf.call(rowEl.children, target);
-			if (colIdx === 0) {
+		const cell = e.target instanceof Element ? e.target.closest('th, td') : null;
+		if (!cell || !table.contains(cell)) return;
+		const idx = cell.cellIndex;
+
+		if (cell.closest('thead')) {
+			if (idx === 0) return; // 重量列ヘッダーはスキップ
+			const reps = RM_REPS[idx - 1];
+			const isSame = rmSelectedReps === reps && rmSelectedWeight == null;
+			rmSelectedReps = isSame ? null : reps;
+			rmSelectedWeight = null;
+		} else {
+			const weight = parseFloat(cell.closest('tr')?.dataset.weight ?? '');
+			if (!Number.isFinite(weight)) return;
+			if (idx === 0) {
 				// 行見出しをクリック → 行のみ選択
-				const isSame = selectedRowIndex === rowIdx && selectedColIndex === null;
-				if (isSame) {
-					selectedRowIndex = null;
-					clearHighlights();
-				} else {
-					selectedColIndex = null;
-					selectedRowIndex = rowIdx;
-					reapplyPersistentHighlights();
-				}
+				const isSame = rmSelectedWeight === weight && rmSelectedReps == null;
+				rmSelectedWeight = isSame ? null : weight;
+				rmSelectedReps = null;
 			} else {
 				// 交差セル → 行と列の両方を選択
-				const isSame = selectedColIndex === colIdx && selectedRowIndex === rowIdx;
-				if (isSame) {
-					selectedColIndex = null;
-					selectedRowIndex = null;
-					clearHighlights();
-				} else {
-					selectedColIndex = colIdx;
-					selectedRowIndex = rowIdx;
-					reapplyPersistentHighlights();
-				}
+				const reps = RM_REPS[idx - 1];
+				const isSame = rmSelectedWeight === weight && rmSelectedReps === reps;
+				rmSelectedWeight = isSame ? null : weight;
+				rmSelectedReps = isSame ? null : reps;
 			}
 		}
+
+		applySelectedRmHighlights();
+		announceRmSelection();
+	});
+
+	// キーボード操作: 矢印キーでセル選択を移動、Escapeで解除
+	wrapper.addEventListener('keydown', (e) => {
+		const handled = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape'];
+		if (!handled.includes(e.key)) return;
+		e.preventDefault();
+
+		if (e.key === 'Escape') {
+			rmSelectedWeight = null;
+			rmSelectedReps = null;
+			applySelectedRmHighlights();
+			announceRmSelection();
+			return;
+		}
+
+		const tbody = table.tBodies[0];
+		if (!tbody || !tbody.rows.length) return;
+		const weights = Array.from(tbody.rows, r => parseFloat(r.dataset.weight));
+
+		let wi = rmSelectedWeight != null ? weights.indexOf(rmSelectedWeight) : -1;
+		let ri = rmSelectedReps != null ? RM_REPS.indexOf(rmSelectedReps) : -1;
+		if (wi === -1) wi = 0;
+		if (ri === -1) ri = 0;
+
+		if (e.key === 'ArrowUp') wi = Math.max(0, wi - 1);
+		if (e.key === 'ArrowDown') wi = Math.min(weights.length - 1, wi + 1);
+		if (e.key === 'ArrowLeft') ri = Math.max(0, ri - 1);
+		if (e.key === 'ArrowRight') ri = Math.min(RM_REPS.length - 1, ri + 1);
+
+		rmSelectedWeight = weights[wi];
+		rmSelectedReps = RM_REPS[ri];
+		applySelectedRmHighlights();
+		announceRmSelection();
+
+		const cross = tbody.rows[wi]?.children[ri + 1];
+		if (cross) cross.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 	});
 })();

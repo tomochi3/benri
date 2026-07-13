@@ -4,9 +4,14 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-	<meta name="theme-color" content="#0ea5e9" />
+	<meta name="theme-color" content="#0b1220" />
+	<meta name="description" content="RM換算表、調整さんの出欠表クイック作成、楽天メルマガの一括解約など、日常で使える便利ツール集。" />
+	<meta property="og:title" content="べんりツールズ" />
+	<meta property="og:description" content="RM換算表や調整さんの出欠表クイック作成など、日常で使える便利ツール集" />
+	<meta property="og:type" content="website" />
 	<title>べんりツールズ</title>
-	<link rel="stylesheet" href="styles.css" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>" />
+	<link rel="stylesheet" href="styles.css?v=2" />
 </head>
 
 <body>
@@ -23,8 +28,8 @@
 			<h2 class="section-title">RM換算表</h2>
 
 			<div class="rm-tabs" id="rmTabs">
-				<button class="rm-tab is-active" data-tab="bench" id="rmTabBench">🏋️ ベンチプレス</button>
-				<button class="rm-tab" data-tab="squat" id="rmTabSquat">🦵 スクワット / デッド</button>
+				<button class="rm-tab is-active" data-tab="bench" id="rmTabBench" aria-pressed="true">🏋️ ベンチプレス</button>
+				<button class="rm-tab" data-tab="squat" id="rmTabSquat" aria-pressed="false">🦵 スクワット / デッド</button>
 			</div>
 
 			<div class="rm-formula" id="rmFormula">
@@ -36,49 +41,69 @@
 				<div class="rm-range-group">
 					<label for="rmRangeMin">重量範囲 (kg)</label>
 					<div class="rm-range-inputs">
-						<input type="number" id="rmRangeMin" value="50" min="0" step="2.5" />
+						<input type="number" id="rmRangeMin" value="50" min="0" step="2.5" aria-label="重量範囲の下限 (kg)" />
 						<span class="rm-range-sep">〜</span>
-						<input type="number" id="rmRangeMax" value="100" min="0" step="2.5" />
+						<input type="number" id="rmRangeMax" value="100" min="0" step="2.5" aria-label="重量範囲の上限 (kg)" />
 					</div>
 				</div>
 			</div>
 
-			<div class="rm-table-wrapper" id="rmTableWrapper">
+			<div class="rm-table-wrapper" id="rmTableWrapper" tabindex="0" role="region"
+				aria-label="RM換算表。矢印キーでセルを選択、Escapeで選択解除">
 				<table class="rm-table" id="rmTable">
+					<caption class="visually-hidden">重量と回数から最大挙上重量(1RM)を推定する換算表</caption>
 					<thead id="rmTableHead"></thead>
 					<tbody id="rmTableBody"></tbody>
 				</table>
 			</div>
+
+			<div class="rm-legend">
+				<span class="rm-legend-label">推定重量(kg)の色:</span>
+				<span class="rm-lv1">〜29</span>
+				<span class="rm-lv2">30〜</span>
+				<span class="rm-lv3">60〜</span>
+				<span class="rm-lv4">90〜</span>
+				<span class="rm-lv5">120〜</span>
+				<span class="rm-lv6">160〜</span>
+				<span class="rm-lv7">200〜</span>
+			</div>
+			<p class="muted rm-hint">セルをクリックすると行・列を固定表示できます(テーブルにフォーカスして矢印キーでも操作、Escapeで解除)。</p>
+			<p id="rmLive" class="visually-hidden" aria-live="polite"></p>
 		</div>
 
 		<div class="card quick-card">
 			<p class="eyebrow">クイック</p>
-			<h2 class="section-title">すぐ作る</h2>
-			<p class="section-copy">今日から2ヶ月先</p>
+			<h2 class="section-title">調整さんをすぐ作る</h2>
+			<p class="section-copy">今日から2ヶ月先までの金曜夜・土日を候補にした日程調整ページ「調整さん」を開きます。</p>
 			<div class="btns hero-actions quick-actions" style="margin-top: 16px;">
-				<button id="quickLaunchAllDayBtn">金曜19時~/土日終日</button>
-				<button id="quickLaunchSplitBtn">金曜19時~/土日9~13時/土日13時~17時</button>
+				<button id="quickLaunchAllDayBtn">出欠表を作る<span class="btn-sub">金曜19時〜 + 土日終日</span></button>
+				<button id="quickLaunchSplitBtn">出欠表を作る<span class="btn-sub">金曜19時〜 + 土日 午前/午後</span></button>
 			</div>
-			<div class="btns quick-subactions">
-				<button id="openRakutenUnsubscribeBtn" class="secondary">楽天メルマガを全部解約</button>
-			</div>
-			<p class="muted quick-subnote">楽天のメルマガと楽天ショップのメルマガをまとめて止める公式ページを開きます。</p>
-			<p class="muted quick-note">開いた先の「出欠表をつくる」を押すとリンクが完成します。</p>
+			<p class="quick-note">開いた先の「出欠表をつくる」ボタンを押すとリンクが完成します。</p>
 		</div>
+
+		<div class="card">
+			<h2 class="section-title">楽天メルマガをまとめて解約</h2>
+			<p class="section-copy">楽天のメルマガと楽天ショップのメルマガをまとめて止める公式ページを開きます。</p>
+			<div class="btns" style="margin-top: 12px;">
+				<button id="openRakutenUnsubscribeBtn" class="secondary">解約ページを開く</button>
+			</div>
+		</div>
+
 		<div class="card support-card">
 			<h2 class="section-title">🙏 応援のお願い</h2>
 			<p class="section-copy">もし「応援してもいいよ」という方がいれば、募金感覚で下記のリンクをご利用いただけると嬉しいです 🙏</p>
 			<div class="btns hero-actions" style="margin-top: 16px; gap: 12px;">
-				<a href="https://www.amazon.co.jp?&linkCode=ll2&tag=pumpkin041-22&linkId=18f56295483f42cb79c528745a2250fb&ref_=as_li_ss_tl" target="_blank" rel="noopener">🛒 Amazonはこちら</a>
-				<a href="https://item.rakuten.co.jp/rakutenoriginal-daily/ro-b-001/" target="_blank" rel="noopener">🏬 楽天市場はこちら</a>
+				<a class="btn" href="https://www.amazon.co.jp?&linkCode=ll2&tag=pumpkin041-22&linkId=18f56295483f42cb79c528745a2250fb&ref_=as_li_ss_tl" target="_blank" rel="noopener">🛒 Amazonはこちら</a>
+				<a class="btn" href="https://item.rakuten.co.jp/rakutenoriginal-daily/ro-b-001/" target="_blank" rel="noopener">🏬 楽天市場はこちら</a>
 			</div>
 			<p class="muted" style="margin-top: 12px;">※リンク経由でAmazonや楽天の商品を購入すると、購入額の一部が運営費として還元されます。</p>
-			<p class="muted">※皆さまからいただいた支援は、水やお茶などの無料提供やイベント（例：<a href="https://kintech.connpass.com" target="_blank" rel="noopener">kintech.connpass.com</a>）運営費に活用させていただきます。</p>
+			<p class="muted">※皆さまからいただいた支援は、水やお茶などの無料提供やイベント(例:<a href="https://kintech.connpass.com" target="_blank" rel="noopener">kintech.connpass.com</a>)運営費に活用させていただきます。</p>
 		</div>
 	</div>
 
 	<div id="toast" class="toast" role="status" aria-live="polite">コピーしました</div>
-	<script src="script.js" defer></script>
+	<script src="script.js?v=2" defer></script>
 </body>
 
 </html>
